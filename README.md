@@ -19,6 +19,14 @@ Tested on Windows and MacOS.
 - Alpha channel support.
 - Option to Premultiply Alpha.
 
+## Installation and Usage
+
+1) Clone this repo to `addons/godot-simplepsd` in your project directory.
+2) To make things work you have to build the C# source. If the Build button doesn't show up, please add another c# file somewhere, then press build.
+3) Enable the plugin under Project->Project Settings->Plugin.
+4) Any PSD files placed in the project folder should now be imported as images.
+5) You can change the import settings for each file to disable Mip Maps and Premultiply Alpha.
+
 ## Known limitations:
 
 - Requires Mono build of Godot 4.
