@@ -13,23 +13,23 @@ using System.Collections.Generic;
 
 	This implementation only supports 8-bits-per-channel,
 	and requires "Maximize Compatibility" to be checked when saving.
-	When "Maximize Compatibility" is checked, a flattened image is 
-	saved along with the separate layers. This is what we use to 
+	When "Maximize Compatibility" is checked, a flattened image is
+	saved along with the separate layers. This is what we use to
 	get the image data.
 */
 public partial class SimplePSDImporter : EditorImportPlugin {
 	// Plugin overrides
 	public override string _GetImporterName() => "kebabskal.psdimporter";
 	public override string _GetVisibleName() => "PSD File";
-	public override string[] _GetRecognizedExtensions() => new[] { "psd" };
+	public override string[] _GetRecognizedExtensions() => new[] { "psd", "psb" };
 	public override string _GetSaveExtension() => "res";
 	public override string _GetResourceType() => "CompressedTexture2D";
-	public override long _GetImportOrder() => 1;
-	public override double _GetPriority() => 1;
-	public override long _GetPresetCount() => 0;
-	public override string _GetPresetName(long presetIndex) => "";
+	public override int _GetImportOrder() => 1;
+	public override float _GetPriority() => 1;
+	public override int _GetPresetCount() => 0;
+	public override string _GetPresetName(int presetIndex) => "";
 	public override bool _GetOptionVisibility(string path, StringName optionName, Dictionary options) => true;
-	public override Array<Dictionary> _GetImportOptions(string path, long presetIndex) {
+	public override Array<Dictionary> _GetImportOptions(string path, int presetIndex) {
 		var presets = new Array<Dictionary>();
 
 		var generateMipMaps = new Dictionary();
@@ -47,7 +47,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 	}
 
 	// The main import method
-	public override long _Import(string sourceFile, string savePath, Dictionary options, Array<string> platformVariants, Array<string> genFiles) {
+	public override Error _Import(string sourceFile, string savePath, Dictionary options, Array<string> platformVariants, Array<string> genFiles) {
 
 		GD.Print($"Import {sourceFile}");
 
@@ -70,7 +70,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 		if (result != Error.Ok)
 			GD.PrintErr(result);
 
-		return (long)result;
+		return result;
 	}
 
 	Image ReadPSD(string sourcePath, bool mipMaps = false, bool premultiplyAlpha = true) {
@@ -134,7 +134,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 				reader.ReadBytes(height * channels * 2);
 
 				while (true) {
-					// TODO: Investigate if there's a better way to 
+					// TODO: Investigate if there's a better way to
 					// find the end than catching EndOfStreamException
 					try {
 						// Read a one byte instruction and convert it to be in the -128..127 range
@@ -172,13 +172,13 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 				throw new Exception($"Unsupported compression format {compression}");
 		}
 
-		// In PSD files each channel is stored separately. 
+		// In PSD files each channel is stored separately.
 		// We need to reorder bytes from these "bitplanes" to interleaved RGB(A)
 		var data = new byte[width * height * channels];
 		var bitplaneStride = width * height;
 
 		if (premultiplyAlpha && channels == 4) {
-			// Multiply color values with alpha to combat white fringing on 
+			// Multiply color values with alpha to combat white fringing on
 			// transparent pixels on top of dark backgrounds
 			for (int i = 0; i < data.Length - (width * channels); i += channels) {
 				var x = i / channels;
@@ -199,8 +199,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 		}
 
 		// Create the image
-		var image = new Image();
-		image.CreateFromData(
+		var image = Image.CreateFromData(
 			width,
 			height,
 			// We do not have mipmaps yet...
