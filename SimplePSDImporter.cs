@@ -139,7 +139,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 					try {
 						// Read a one byte instruction and convert it to be in the -128..127 range
 						var n = (int)reader.ReadByte();
-						if (n > 127) n = n - 256;
+						if (n >= 127) n = n - 256;
 
 						// Act on instructions
 						if (n == -128) {
@@ -180,7 +180,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 		if (premultiplyAlpha && channels == 4) {
 			// Multiply color values with alpha to combat white fringing on
 			// transparent pixels on top of dark backgrounds
-			for (int i = 0; i < data.Length - (width * channels); i += channels) {
+			for (int i = 0; i < data.Length - 1; i += channels) {
 				var x = i / channels;
 				var a = data[i + 3] = uncompressedBytes[x + bitplaneStride * 3]; // A
 				data[i + 0] = (byte)((uncompressedBytes[x + bitplaneStride * 0] * a) / 256); // R
@@ -188,7 +188,7 @@ public partial class SimplePSDImporter : EditorImportPlugin {
 				data[i + 2] = (byte)((uncompressedBytes[x + bitplaneStride * 2] * a) / 256); // B
 			}
 		} else {
-			for (int i = 0; i < data.Length - (width * channels); i += channels) {
+			for (int i = 0; i < data.Length - 1; i += channels) {
 				var x = i / channels;
 				data[i + 0] = uncompressedBytes[x + bitplaneStride * 0]; // R
 				data[i + 1] = uncompressedBytes[x + bitplaneStride * 1]; // G
